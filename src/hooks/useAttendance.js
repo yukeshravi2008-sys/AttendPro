@@ -129,6 +129,39 @@ export default function useAttendance() {
     return records;
   }, [user]);
 
+  const getMonthlyEarnings = useCallback(async (year, month, dailyWage) => {
+    if (!user) return null;
+    const records = await getMonthlyAttendance(year, month);
+    const presentDays = records.filter(r => r.status === 'present' || r.status === 'late').length;
+    const workingDays = 26;
+    const absentDays = workingDays - presentDays;
+    const earnedSalary = dailyWage * presentDays;
+    const deduction = dailyWage * absentDays;
+    return {
+      year,
+      month,
+      presentDays,
+      absentDays,
+      dailyWage,
+      earnedSalary,
+      deduction,
+      netSalary: earnedSalary,
+      workingDays,
+    };
+  }, [user, getMonthlyAttendance]);
+
+  const getEarningsReport = useCallback(async (dailyWage, monthsBack = 6) => {
+    if (!user) return [];
+    const results = [];
+    const now = new Date();
+    for (let i = monthsBack - 1; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const earning = await getMonthlyEarnings(d.getFullYear(), d.getMonth(), dailyWage);
+      if (earning) results.push(earning);
+    }
+    return results;
+  }, [user, getMonthlyEarnings]);
+
   return {
     attendance,
     todayRecord,
@@ -137,5 +170,7 @@ export default function useAttendance() {
     checkOut,
     fetchAttendance,
     getMonthlyAttendance,
+    getMonthlyEarnings,
+    getEarningsReport,
   };
 }

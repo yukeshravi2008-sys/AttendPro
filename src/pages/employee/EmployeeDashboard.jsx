@@ -8,12 +8,14 @@ import LoadingSpinner from '../../components/shared/LoadingSpinner';
 import { format } from 'date-fns';
 import { MapContainer, TileLayer, Marker, Circle, Popup } from 'react-leaflet';
 import { useState, useEffect } from 'react';
+import { IndianRupee } from 'lucide-react';
 
 export default function EmployeeDashboard() {
   const { userData, companyId } = useAuth();
-  const { attendance, todayRecord } = useAttendance();
+  const { attendance, todayRecord, getMonthlyEarnings } = useAttendance();
   const { leaveRequests } = useLeave();
   const [company, setCompany] = useState(null);
+  const [currentEarnings, setCurrentEarnings] = useState(null);
 
   useEffect(() => {
     if (!companyId) return
@@ -44,6 +46,13 @@ export default function EmployeeDashboard() {
 
     fetchCompany()
   }, [companyId])
+
+  useEffect(() => {
+    const dailyWage = userData?.daily_wage || 0;
+    if (!dailyWage) return;
+    const now = new Date();
+    getMonthlyEarnings(now.getFullYear(), now.getMonth(), dailyWage).then(setCurrentEarnings);
+  }, [userData, getMonthlyEarnings])
 
   const pendingLeaves = leaveRequests.filter(l => l.status === 'pending');
 
@@ -115,6 +124,41 @@ export default function EmployeeDashboard() {
             />
           </div>
         </div>
+
+        {currentEarnings && (
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <div className="flex items-center gap-2 mb-4">
+              <IndianRupee className="h-5 w-5 text-teal-600" />
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">This Month Earnings</h3>
+            </div>
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-500 dark:text-gray-400">Earned Salary</span>
+                <span className="text-lg font-bold text-teal-600">₹{(currentEarnings.earnedSalary || 0).toLocaleString('en-IN')}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-500 dark:text-gray-400">Present Days</span>
+                <span className="font-semibold text-gray-900 dark:text-white">{currentEarnings.presentDays}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-500 dark:text-gray-400">Absent Days</span>
+                <span className="font-semibold text-gray-900 dark:text-white">{currentEarnings.absentDays}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-500 dark:text-gray-400">Daily Wage</span>
+                <span className="font-semibold text-gray-900 dark:text-white">₹{(currentEarnings.dailyWage || 0).toLocaleString('en-IN')}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-500 dark:text-gray-400">Deduction</span>
+                <span className="font-semibold text-red-500">₹{(currentEarnings.deduction || 0).toLocaleString('en-IN')}</span>
+              </div>
+              <div className="pt-2 border-t border-gray-200 dark:border-gray-600 flex justify-between items-center">
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Net Salary</span>
+                <span className="text-lg font-bold text-teal-600">₹{(currentEarnings.netSalary || 0).toLocaleString('en-IN')}</span>
+              </div>
+            </div>
+          </div>
+        )}
 
         {pendingLeaves.length > 0 && (
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">

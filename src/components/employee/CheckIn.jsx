@@ -191,7 +191,7 @@ export default function CheckIn() {
 
       {showCamera && (
         <div className="relative rounded-lg overflow-hidden bg-black max-w-md">
-          <video ref={videoRef} autoPlay playsInline className="w-full" />
+          <video ref={videoRef} autoPlay playsInline muted className="w-full" />
           <canvas ref={canvasRef} className="hidden" />
           <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
             <button

@@ -12,6 +12,7 @@ import EmployeeDashboard from './pages/employee/EmployeeDashboard';
 import EmployeeAttendance from './pages/employee/EmployeeAttendance';
 import EmployeeLeave from './pages/employee/EmployeeLeave';
 import EmployeeProfile from './pages/employee/EmployeeProfile';
+import EmployeeEarnings from './pages/employee/Earnings';
 
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminEmployees from './pages/admin/AdminEmployees';
@@ -65,6 +66,9 @@ export default function App() {
             } />
             <Route path="/employee/profile" element={
               <ProtectedRoute allowedRoles={['employee']}><ErrorBoundary><EmployeeProfile /></ErrorBoundary></ProtectedRoute>
+            } />
+            <Route path="/employee/earnings" element={
+              <ProtectedRoute allowedRoles={['employee']}><ErrorBoundary><EmployeeEarnings /></ErrorBoundary></ProtectedRoute>
             } />
 
             <Route path="/admin/dashboard" element={

@@ -68,7 +68,8 @@ export default function EmployeeTable({
               <th className="text-left py-3 px-4 text-gray-600 dark:text-gray-400 font-medium">Name</th>
               <th className="text-left py-3 px-4 text-gray-600 dark:text-gray-400 font-medium">Email</th>
               <th className="text-left py-3 px-4 text-gray-600 dark:text-gray-400 font-medium">Phone</th>
-              <th className="text-left py-3 px-4 text-gray-600 dark:text-gray-400 font-medium">Role</th>
+              <th className="text-left py-3 px-4 text-gray-600 dark:text-gray-400 font-medium">Daily Wage</th>
+              <th className="text-left py-3 px-4 text-gray-600 dark:text-gray-400 font-medium">Monthly</th>
               <th className="text-left py-3 px-4 text-gray-600 dark:text-gray-400 font-medium">Status</th>
               <th className="text-right py-3 px-4 text-gray-600 dark:text-gray-400 font-medium">Actions</th>
             </tr>
@@ -76,7 +77,7 @@ export default function EmployeeTable({
           <tbody>
             {filtered.length === 0 ? (
               <tr>
-                <td colSpan={6} className="py-8 text-center text-gray-500 dark:text-gray-400">
+                <td colSpan={7} className="py-8 text-center text-gray-500 dark:text-gray-400">
                   No employees found
                 </td>
               </tr>
@@ -93,6 +94,12 @@ export default function EmployeeTable({
                   </td>
                   <td className="py-3 px-4 text-gray-600 dark:text-gray-400">{emp.email}</td>
                   <td className="py-3 px-4 text-gray-600 dark:text-gray-400">{emp.phone || '-'}</td>
+                  <td className="py-3 px-4 text-gray-600 dark:text-gray-400">
+                    {emp.daily_wage ? `₹${Number(emp.daily_wage).toLocaleString('en-IN')}` : '-'}
+                  </td>
+                  <td className="py-3 px-4 text-gray-600 dark:text-gray-400">
+                    {emp.monthly_salary ? `₹${Number(emp.monthly_salary).toLocaleString('en-IN')}` : '-'}
+                  </td>
                   <td className="py-3 px-4">
                     <Badge variant={emp.role}>{emp.role}</Badge>
                   </td>

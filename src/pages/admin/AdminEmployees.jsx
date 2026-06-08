@@ -19,10 +19,14 @@ export default function AdminEmployees() {
   const handleEdit = async (e) => {
     e.preventDefault();
     const form = e.target;
+    const dailyWage = form.daily_wage.value ? Number(form.daily_wage.value) : 0;
+    const monthlySalary = form.monthly_salary.value ? Number(form.monthly_salary.value) : 0;
     const data = {
       full_name: form.full_name.value,
       phone: form.phone.value,
       status: form.status.value,
+      daily_wage: dailyWage,
+      monthly_salary: monthlySalary,
     };
     try {
       await updateEmployee(editingEmployee.id, data);
@@ -31,6 +35,22 @@ export default function AdminEmployees() {
     } catch (err) {
       toast.error(err.message);
     }
+  };
+
+  const [editMonthlySalary, setEditMonthlySalary] = useState('');
+  const [editDailyWage, setEditDailyWage] = useState('');
+
+  const openEditModal = (emp) => {
+    setEditingEmployee(emp);
+    setEditMonthlySalary(emp.monthly_salary || '');
+    setEditDailyWage(emp.daily_wage || '');
+  };
+
+  const handleEditMonthlySalaryChange = (e) => {
+    const val = e.target.value;
+    const monthly = val === '' ? '' : Number(val);
+    setEditMonthlySalary(val);
+    setEditDailyWage(monthly ? Math.round(monthly / 26) : '');
   };
 
   const handleDelete = async () => {
@@ -55,7 +75,7 @@ export default function AdminEmployees() {
         employees={employees}
         loading={loading}
         onAdd={() => setShowAddModal(true)}
-        onEdit={(emp) => setEditingEmployee(emp)}
+        onEdit={openEditModal}
         onDelete={(emp) => setDeletingEmployee(emp)}
       />
 
@@ -98,6 +118,40 @@ export default function AdminEmployees() {
               <option value="inactive">Inactive</option>
             </select>
           </div>
+
+          <div className="border-t border-gray-200 dark:border-gray-600 pt-4">
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Wage Settings</p>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Monthly Salary (₹)</label>
+                <input
+                  type="number"
+                  name="monthly_salary"
+                  value={editMonthlySalary}
+                  onChange={handleEditMonthlySalaryChange}
+                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-teal-500"
+                  min="0"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Daily Wage (₹)</label>
+                <input
+                  type="number"
+                  name="daily_wage"
+                  value={editDailyWage}
+                  onChange={(e) => setEditDailyWage(e.target.value)}
+                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-teal-500"
+                  min="0"
+                />
+              </div>
+            </div>
+            {editMonthlySalary > 0 && (
+              <p className="text-xs text-gray-500 mt-2">
+                Daily wage auto-calculated: ₹{Math.round(Number(editMonthlySalary) / 26)}/day
+              </p>
+            )}
+          </div>
+
           <div className="flex gap-3 justify-end">
             <button
               type="button"

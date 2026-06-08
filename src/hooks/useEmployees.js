@@ -40,6 +40,8 @@ export default function useEmployees() {
       role: 'employee',
       status: 'active',
       profile_photo: '',
+      daily_wage: employeeData.daily_wage || 0,
+      monthly_salary: employeeData.monthly_salary || 0,
       created_at: new Date().toISOString(),
     });
     await fetchEmployees();

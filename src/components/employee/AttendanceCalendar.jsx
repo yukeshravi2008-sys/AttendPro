@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import useAttendance from '../../hooks/useAttendance';
-import { getMonthDays, getDayStatus, getAttendanceColor, formatTime } from '../../utils/dateUtils';
+import { getMonthDays, getDayStatus, getAttendanceColor, formatTime, getLocalDateString, getTodayDateString } from '../../utils/dateUtils';
 import Badge from '../shared/Badge';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
@@ -108,9 +108,9 @@ export default function AttendanceCalendar() {
             <div key={`empty-${i}`} />
           ))}
           {days.map((day) => {
-            const dateStr = day.toISOString().split('T')[0];
+            const dateStr = getLocalDateString(day);
             const status = getDayStatus(dateStr, records);
-            const isToday = dateStr === new Date().toISOString().split('T')[0];
+            const isToday = dateStr === getTodayDateString();
             const isSelected = selectedDay === dateStr;
 
             return (

@@ -54,8 +54,16 @@ export default function EmployeeDashboard() {
   useEffect(() => {
     const dailyWage = userData?.daily_wage || 0;
     if (!dailyWage) return;
-    getMonthlyEarnings(currentYear, currentMonth, dailyWage, userData?.created_at).then(setCurrentEarnings);
-  }, [userData, getMonthlyEarnings, currentYear, currentMonth]);
+    console.log('created_at:', userData?.created_at);
+    console.log('created_at type:', typeof userData?.created_at);
+    const now = new Date();
+    getMonthlyEarnings(
+      now.getFullYear(),
+      now.getMonth(),
+      dailyWage,
+      userData?.created_at
+    ).then(setCurrentEarnings);
+  }, [userData, getMonthlyEarnings]);
 
   const pendingLeaves = leaveRequests.filter(l => l.status === 'pending');
 

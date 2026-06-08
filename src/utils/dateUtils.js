@@ -59,3 +59,8 @@ export const isLateArrival = (checkInTime, shiftStartTime, graceMinutes = 15) =>
 };
 
 export const getTodayDateString = () => format(new Date(), 'yyyy-MM-dd');
+
+export const getLocalDateString = (date) => {
+  const d = date || new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+};

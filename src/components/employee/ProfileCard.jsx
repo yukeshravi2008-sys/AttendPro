@@ -25,23 +25,29 @@ export default function ProfileCard() {
       toast.error('Image must be under 5MB');
       return;
     }
+
     setUploadingPhoto(true);
     try {
-      const reader = new FileReader();
-      reader.onload = async (event) => {
-        const dataUrl = event.target.result;
-        const storageRef = ref(storage, `profiles/${user.uid}_${Date.now()}.jpg`);
-        await uploadString(storageRef, dataUrl, 'data_url');
-        const url = await getDownloadURL(storageRef);
-        await updateDocument('users', user.uid, { profile_photo: url });
-        await refreshUserData();
-        toast.success('Photo updated');
-      };
-      reader.readAsDataURL(file);
+      const dataUrl = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (event) => resolve(event.target.result);
+        reader.onerror = () => reject(new Error('Failed to read file'));
+        reader.readAsDataURL(file);
+      });
+
+      const storageRef = ref(storage, `profiles/${user.uid}_${Date.now()}.jpg`);
+      await uploadString(storageRef, dataUrl, 'data_url');
+      const url = await getDownloadURL(storageRef);
+      await updateDocument('users', user.uid, { profile_photo: url });
+      await refreshUserData();
+      toast.success('Photo updated');
     } catch (err) {
-      toast.error('Failed to upload photo');
+      console.error('Photo upload error:', err);
+      toast.error('Failed to upload photo: ' + err.message);
     } finally {
       setUploadingPhoto(false);
+      // Reset file input so same file can be selected again
+      if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
 
@@ -74,7 +80,7 @@ export default function ProfileCard() {
             <button
               onClick={() => fileInputRef.current?.click()}
               disabled={uploadingPhoto}
-              className="absolute bottom-0 right-0 p-1.5 bg-teal-600 text-white rounded-full hover:bg-teal-700"
+              className="absolute bottom-0 right-0 p-1.5 bg-teal-600 text-white rounded-full hover:bg-teal-700 disabled:opacity-50"
             >
               {uploadingPhoto ? <LoadingSpinner size="sm" text="" /> : <Camera className="h-4 w-4" />}
             </button>

@@ -137,9 +137,14 @@ export default function useAttendance() {
     const presentDays = presentStrict + lateDays;
 
     const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
-    let startDate = firstDay;
+    const today = new Date();
 
+    // Only count up to today, not end of month
+    const lastDay = (year === today.getFullYear() && month === today.getMonth())
+      ? today
+      : new Date(year, month + 1, 0);
+
+    let startDate = firstDay;
     if (joiningDate) {
       const join = joiningDate?.toDate ? joiningDate.toDate() : new Date(joiningDate);
       if (join > firstDay) startDate = join;

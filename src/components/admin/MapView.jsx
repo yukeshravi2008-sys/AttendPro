@@ -3,7 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import { MapContainer, TileLayer, Marker, Circle, Popup } from 'react-leaflet';
 import { getDocument, queryDocuments } from '../../lib/firestore';
 import { haversineDistance } from '../../utils/haversine';
-import { formatTime } from '../../utils/dateUtils';
+import { formatTime, getTodayDateString } from '../../utils/dateUtils';
 import LoadingSpinner from '../shared/LoadingSpinner';
 import { MapPin, Building2 } from 'lucide-react';
 
@@ -21,7 +21,7 @@ export default function MapView() {
         const companyData = await getDocument('companies', companyId);
         setCompany(companyData);
 
-        const today = new Date().toISOString().split('T')[0];
+        const today = getTodayDateString();
         const todayAttendance = await queryDocuments('attendance', 'date', '==', today);
         setAttendance(todayAttendance.filter(a => a.company_id === companyId && a.latitude));
 

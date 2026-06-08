@@ -21,11 +21,10 @@ export function AuthProvider({ children }) {
     if (snap.exists()) {
       profileData = snap.data();
     } else {
-      // Auto-create missing profile
       profileData = {
         full_name: firebaseUser.displayName || firebaseUser.email.split('@')[0],
         email: firebaseUser.email,
-        role: 'superadmin',
+        role: 'employee',
         company_id: '',
         phone: '',
         status: 'active',
@@ -36,23 +35,9 @@ export function AuthProvider({ children }) {
       console.log('[AuthContext] Created missing user profile in Firestore');
     }
 
-    // Auto-seed missing company if it doesn't exist
-    const companyId = profileData?.company_id || profileData?.companyId;
-    if (companyId && typeof companyId === 'string' && companyId.trim() !== '') {
-      const cleanCompanyId = companyId.trim();
-      const companyRef = doc(db, 'companies', cleanCompanyId, 'companies', cleanCompanyId);
-      const companySnap = await getDoc(companyRef);
-      if (!companySnap.exists()) {
-        console.log(`[AuthContext] Seeding missing company document for ID: ${cleanCompanyId}`);
-        await setDoc(companyRef, {
-          company_name: 'AttendPro Headquarters',
-          address: '100 Silicon Valley Blvd, San Jose, CA',
-          latitude: 37.3382,
-          longitude: -121.8863,
-          allowed_radius: 500,
-          created_at: new Date().toISOString(),
-        });
-      }
+    // Validate profile has required fields
+    if (!profileData.role || !profileData.status) {
+      console.error('[AuthContext] User profile missing required fields');
     }
 
     return profileData;

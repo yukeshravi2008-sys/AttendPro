@@ -2,14 +2,21 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import useAttendance from '../../hooks/useAttendance';
 import LoadingSpinner from '../../components/shared/LoadingSpinner';
-import { IndianRupee, TrendingUp, TrendingDown } from 'lucide-react';
+import { IndianRupee, TrendingUp, TrendingDown, Download } from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from 'recharts';
+import generatePayslip from '../../utils/generatePayslip';
+import toast from 'react-hot-toast';
 
 const MONTH_NAMES = [
   'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
   'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+];
+
+const FULL_MONTHS = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December',
 ];
 
 function formatINR(num) {
@@ -17,23 +24,54 @@ function formatINR(num) {
 }
 
 export default function Earnings() {
-  const { userData } = useAuth();
+  const { user, userData } = useAuth();
   const { getEarningsReport, loading } = useAttendance();
   const [earnings, setEarnings] = useState([]);
   const [fetching, setFetching] = useState(true);
+  const [downloading, setDownloading] = useState(null);
 
   const dailyWage = userData?.daily_wage || 0;
+
+  const handleDownload = (e) => {
+    setDownloading(`${e.month}-${e.year}`);
+    try {
+      generatePayslip({
+        employeeName: userData?.full_name || 'Employee',
+        employeeId: user?.uid || '—',
+        designation: 'Employee',
+        bankAccount: '—',
+        monthName: FULL_MONTHS[e.month],
+        year: e.year,
+        workingDays: e.workingDays,
+        presentDays: e.presentStrict,
+        lateDays: e.lateDays,
+        absentDays: e.absentDays,
+        leaveDays: 0,
+        dailyWage: e.dailyWage,
+        earnedSalary: e.earnedSalary,
+        absentDeduction: e.deduction,
+        lateDeduction: 0,
+        netSalary: e.netSalary,
+      });
+      toast.success('Payslip downloaded');
+    } catch (err) {
+      toast.error('Failed to generate payslip');
+      console.error(err);
+    } finally {
+      setDownloading(null);
+    }
+  };
 
   useEffect(() => {
     if (!dailyWage) {
       setFetching(false);
       return;
     }
-    getEarningsReport(dailyWage, 6).then((data) => {
+    getEarningsReport(dailyWage, 6, userData?.created_at).then((data) => {
       setEarnings(data);
       setFetching(false);
     });
-  }, [dailyWage, getEarningsReport]);
+  }, [dailyWage, getEarningsReport, userData]);
 
   const totalEarnedThisYear = earnings
     .filter(e => e.year === new Date().getFullYear())
@@ -124,17 +162,19 @@ export default function Earnings() {
                   <tr className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
                     <th className="text-left py-3 px-4 text-gray-600 dark:text-gray-400 font-medium">Month</th>
                     <th className="text-center py-3 px-4 text-gray-600 dark:text-gray-400 font-medium">Present</th>
+                    <th className="text-center py-3 px-4 text-gray-600 dark:text-gray-400 font-medium">Late</th>
                     <th className="text-center py-3 px-4 text-gray-600 dark:text-gray-400 font-medium">Absent</th>
                     <th className="text-right py-3 px-4 text-gray-600 dark:text-gray-400 font-medium">Daily Wage</th>
                     <th className="text-right py-3 px-4 text-gray-600 dark:text-gray-400 font-medium">Earned</th>
                     <th className="text-right py-3 px-4 text-gray-600 dark:text-gray-400 font-medium">Deduction</th>
                     <th className="text-right py-3 px-4 text-gray-600 dark:text-gray-400 font-medium">Net Salary</th>
+                    <th className="text-center py-3 px-4 text-gray-600 dark:text-gray-400 font-medium">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {earnings.length === 0 ? (
                     <tr>
-                      <td colSpan={7} className="py-8 text-center text-gray-500 dark:text-gray-400">
+                      <td colSpan={9} className="py-8 text-center text-gray-500 dark:text-gray-400">
                         No earnings data available
                       </td>
                     </tr>
@@ -144,12 +184,23 @@ export default function Earnings() {
                         <td className="py-3 px-4 font-medium text-gray-900 dark:text-white">
                           {MONTH_NAMES[e.month]} {e.year}
                         </td>
-                        <td className="py-3 px-4 text-center text-green-600 font-medium">{e.presentDays}</td>
+                        <td className="py-3 px-4 text-center text-green-600 font-medium">{e.presentStrict}</td>
+                        <td className="py-3 px-4 text-center text-amber-600 font-medium">{e.lateDays}</td>
                         <td className="py-3 px-4 text-center text-red-500 font-medium">{e.absentDays}</td>
                         <td className="py-3 px-4 text-right text-gray-600 dark:text-gray-400">₹{formatINR(e.dailyWage)}</td>
                         <td className="py-3 px-4 text-right text-gray-900 dark:text-white font-medium">₹{formatINR(e.earnedSalary)}</td>
                         <td className="py-3 px-4 text-right text-red-500">₹{formatINR(e.deduction)}</td>
                         <td className="py-3 px-4 text-right text-teal-600 font-bold">₹{formatINR(e.netSalary)}</td>
+                        <td className="py-3 px-4 text-center">
+                          <button
+                            onClick={() => handleDownload(e)}
+                            disabled={downloading === `${e.month}-${e.year}`}
+                            className="p-1.5 rounded-lg hover:bg-teal-100 dark:hover:bg-teal-900/30 text-teal-600 disabled:opacity-40"
+                            title="Download Payslip"
+                          >
+                            <Download className="h-4 w-4" />
+                          </button>
+                        </td>
                       </tr>
                     ))
                   )}

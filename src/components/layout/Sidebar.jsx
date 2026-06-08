@@ -2,7 +2,7 @@ import { NavLink } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import {
   LayoutDashboard, Users, ClipboardCheck, CalendarCheck,
-  MapPin, Building2, LogOut, X, ChevronLeft, IndianRupee,
+  MapPin, Building2, LogOut, X, ChevronLeft, IndianRupee, BarChart3,
 } from 'lucide-react';
 
 const employeeLinks = [
@@ -15,6 +15,7 @@ const employeeLinks = [
 
 const adminLinks = [
   { to: '/admin/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+  { to: '/admin/analytics', icon: BarChart3, label: 'Analytics' },
   { to: '/admin/employees', icon: Users, label: 'Employees' },
   { to: '/admin/reports', icon: ClipboardCheck, label: 'Reports' },
   { to: '/admin/leave', icon: CalendarCheck, label: 'Leave' },

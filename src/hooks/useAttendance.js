@@ -129,18 +129,38 @@ export default function useAttendance() {
     return records;
   }, [user]);
 
-  const getMonthlyEarnings = useCallback(async (year, month, dailyWage) => {
+  const getMonthlyEarnings = useCallback(async (year, month, dailyWage, joiningDate) => {
     if (!user) return null;
     const records = await getMonthlyAttendance(year, month);
-    const presentDays = records.filter(r => r.status === 'present' || r.status === 'late').length;
-    const workingDays = 26;
-    const absentDays = workingDays - presentDays;
+    const presentStrict = records.filter(r => r.status === 'present').length;
+    const lateDays = records.filter(r => r.status === 'late').length;
+    const presentDays = presentStrict + lateDays;
+
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    let startDate = firstDay;
+
+    if (joiningDate) {
+      const join = joiningDate?.toDate ? joiningDate.toDate() : new Date(joiningDate);
+      if (join > firstDay) startDate = join;
+    }
+
+    let workingDays = 0;
+    const d = new Date(startDate);
+    while (d <= lastDay) {
+      if (d.getDay() !== 0) workingDays++;
+      d.setDate(d.getDate() + 1);
+    }
+
+    const absentDays = Math.max(0, workingDays - presentDays);
     const earnedSalary = dailyWage * presentDays;
     const deduction = dailyWage * absentDays;
     return {
       year,
       month,
       presentDays,
+      presentStrict,
+      lateDays,
       absentDays,
       dailyWage,
       earnedSalary,
@@ -150,13 +170,13 @@ export default function useAttendance() {
     };
   }, [user, getMonthlyAttendance]);
 
-  const getEarningsReport = useCallback(async (dailyWage, monthsBack = 6) => {
+  const getEarningsReport = useCallback(async (dailyWage, monthsBack = 6, joiningDate) => {
     if (!user) return [];
     const results = [];
     const now = new Date();
     for (let i = monthsBack - 1; i >= 0; i--) {
       const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      const earning = await getMonthlyEarnings(d.getFullYear(), d.getMonth(), dailyWage);
+      const earning = await getMonthlyEarnings(d.getFullYear(), d.getMonth(), dailyWage, joiningDate);
       if (earning) results.push(earning);
     }
     return results;

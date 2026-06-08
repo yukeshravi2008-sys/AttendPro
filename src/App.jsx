@@ -19,6 +19,7 @@ import AdminEmployees from './pages/admin/AdminEmployees';
 import AdminReports from './pages/admin/AdminReports';
 import AdminLeave from './pages/admin/AdminLeave';
 import AdminMap from './pages/admin/AdminMap';
+import AdminAnalytics from './pages/admin/Analytics';
 
 import SuperAdminDashboard from './pages/superadmin/SuperAdminDashboard';
 import CompanyManagement from './pages/superadmin/CompanyManagement';
@@ -85,6 +86,9 @@ export default function App() {
             } />
             <Route path="/admin/map" element={
               <ProtectedRoute allowedRoles={['admin']}><ErrorBoundary><AdminMap /></ErrorBoundary></ProtectedRoute>
+            } />
+            <Route path="/admin/analytics" element={
+              <ProtectedRoute allowedRoles={['admin']}><ErrorBoundary><AdminAnalytics /></ErrorBoundary></ProtectedRoute>
             } />
 
             <Route path="/superadmin/dashboard" element={
